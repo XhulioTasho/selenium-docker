@@ -3,7 +3,7 @@ FROM openjdk:8u191-jre-alpine3.8
 RUN apk add curl jq
 
 # Workspace
-WORKDIR c//Users/AG/Downloads/workspace/SELENIUM_DOCKER_BUILDER
+WORKDIR //c/Users/AG/Downloads/workspace/SELENIUM_DOCKER_BUILDER
 
 # ADD .jar under target from host
 # into this image
