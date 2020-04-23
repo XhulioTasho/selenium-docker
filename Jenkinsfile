@@ -1,4 +1,3 @@
-sh "sudo chown jenkins: -R \$PWD/"
 pipeline {
     agent none
     stages {
