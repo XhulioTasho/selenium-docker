@@ -1,33 +1,36 @@
 pipeline {
-    agent none
-    stages {
-        stage('Build Jar') {
-            agent {
-                docker {
-                    image 'maven:3-alpine'
-                    args '-v $HOME/.m2:/root/.m2'
-                }
-            }
-            steps {
-                sh 'mvn clean package -DskipTests'
-            }
-        }
-        stage('Build Image') {
-            steps {
-                script {
-                	app = docker.build("xhuliot/selenium-docker")
-                }
-            }
-        }
-        stage('Push Image') {
-            steps {
-                script {
-			        docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
-			        	app.push("${BUILD_NUMBER}")
-			            app.push("latest")
-			        }
-                }
-            }
-        }
+  environment {
+    registry = "xhuliot/selenium-docker"
+    registryCredential = 'dockerhub'
+    dockerImage = ''
+  }
+  agent any
+  stages {
+    stage('Cloning Git') {
+      steps {
+        git 'https://github.com/XhulioTasho/selenium-docker.git'
+      }
     }
+    stage('Building image') {
+      steps{
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
+    }
+    stage('Deploy Image') {
+      steps{
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            dockerImage.push()
+          }
+        }
+      }
+    }
+    stage('Remove Unused docker image') {
+      steps{
+        sh "docker rmi $registry:$BUILD_NUMBER"
+      }
+    }
+  }
 }
