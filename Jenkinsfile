@@ -14,19 +14,20 @@ pipeline {
     stage('Building image') {
       steps{
         script {
-          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+          app = docker.build("xhuliot/selenium-docker")
         }
       }
     }
-    stage('Deploy Image') {
-      steps{
-        script {
-          docker.withRegistry( '', registryCredential ) {
-            dockerImage.push()
-          }
-        }
-      }
-    }
+    stage('Push Image') {
+                steps {
+                    script {
+    			        docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+    			        	app.push("${BUILD_NUMBER}")
+    			            app.push("latest")
+    			        }
+                    }
+                }
+            }
     stage('Remove Unused docker image') {
       steps{
         bat "docker rmi $registry:$BUILD_NUMBER"
